@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Strong Wave Fitness</title>
+
+  <!-- shared CSS -->
+  <link rel="stylesheet" href="styles.css">
+
+  <style>
+    /* overlay alpha variables — changed by body.light (light mode) */
+    :root{
+      --overlay-top: 0.18;   /* dark-mode top stop alpha (default darker) */
+      --overlay-bottom: 0.45;/* dark-mode bottom stop alpha (default darker) */
+    }
+    /* when body has class 'light' (scripts.js sets this) make overlay more transparent */
+    body.light {
+      --overlay-top: 0.06;
+      --overlay-bottom: 0.18;
+    }
+
+    /* Background media */
+    .media-bg {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -2;
+      pointer-events: none;
+      background: #000;
+    }
+
+    /* The overlay uses CSS variables for alpha so it becomes more transparent in light mode */
+    .video-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,var(--overlay-top)),
+        rgba(0,0,0,var(--overlay-bottom))
+      );
+      transition: background 280ms ease, opacity 280ms ease;
+    }
+
+    /* If you want to quickly tweak opacity without changing gradient stops */
+    .video-overlay--dim {
+      opacity: 0.95;
+    }
+
+    /* Ensure poster images (when inserted) cover area */
+    .bg-poster-img {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -2;
+      pointer-events: none;
+      background: #000;
+    }
+
+    /* Position main content above overlay */
+    main { position: relative; z-index: 10; }
+  </style>
+</head>
+<body>
+  <!-- Video element (preferred production source: videos/gym-bg.mp4) -->
+  <video id="bg-video" class="media-bg" autoplay muted loop playsinline preload="auto"
+         poster="videos/gym-bg-poster.jpg"
+         data-local-src="/mnt/data/Desktop 2025.11.23 - 11.40.46.01.mp4">
+    <!-- primary production source (upload to GitHub: videos/gym-bg.mp4) -->
+    <source src="videos/gym-bg.mp4" type="video/mp4">
+    <!-- fallback local/test source (works inside this environment) -->
+    <source src="/mnt/data/Desktop 2025.11.23 - 11.40.46.01.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+
+  <!-- Overlay whose transparency is controlled by CSS variables (changes with theme) -->
+  <div class="video-overlay" aria-hidden="true"></div>
+
+  <!-- Header -->
+ <header class="site-header">
+  <a class="site-brand" href="index.html">Strong Wave Fitness</a>
+  <div class="nav" role="navigation" aria-label="Main">
+    <a href="home.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="information.html">Information</a>
+    <a href="contact.html">Contact</a>
+  </div>
+</header>
+
+  <main>
+    <section class="hero" role="banner">
+      <h1 class="site-title">Strong Wave Fitness</h1>
+      <div class="cta-row">
+        <a class="btn" href="home.html">Browse Items</a>
+        <a class="btn" href="contact.html">Contact Us</a>
+      </div>
+    </section>
+
+    <section class="about-block" aria-labelledby="about-heading">
+      <p id="about-heading">
+        Strong Wave Fitness is a growing fitness brand dedicated to providing affordable and high-quality products for students, hostel residents, and home gym users. We create durable handmade wooden gym equipment, everyday fitness accessories, and custom-designed fitness T-shirts that bring both style and motivation to your workouts. Our goal is simple: make fitness accessible and enjoyable for everyone. With creativity, strength, and passion behind every product, Strong Wave Fitness supports your journey to becoming stronger—anytime, anywhere.
+      </p>
+    </section>
+
+    <footer class="site-footer">
+      &copy; <span id="yr"></span> Strong Wave Fitness
+    </footer>
+  </main>
+
+  <!-- shared JS (theme toggle, active nav, year, WA helper) -->
+  <script src="scripts.js" defer></script>
+
+  <!-- Mobile detection: replace video with poster on phones (keeps same poster logic) -->
+  <script>
+    (function(){
+      const VIDEO = document.getElementById('bg-video');
+      const LOCAL_POSTER = '/mnt/data/e20166ae-6695-40db-93f5-f4ca88dd918f.png';
+      const GITHUB_POSTER = 'videos/gym-bg-poster.jpg';
+
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+                       || (window.matchMedia && window.matchMedia('(pointer:coarse)').matches);
+
+      function replaceWithPoster(src) {
+        if (!VIDEO) return;
+        VIDEO.parentNode && VIDEO.parentNode.removeChild(VIDEO);
+
+        // insert poster image
+        const img = document.createElement('img');
+        img.className = 'bg-poster-img';
+        img.alt = 'Background';
+        img.src = src;
+        document.body.insertBefore(img, document.querySelector('.video-overlay'));
+      }
+
+      if (isMobile) {
+        // prefer GitHub poster if we're on a hosted site (not necessary to detect strictly)
+        const posterToUse = (location.hostname && location.hostname !== 'localhost') ? GITHUB_POSTER : LOCAL_POSTER;
+        replaceWithPoster(posterToUse);
+      } else {
+        // desktop: ensure the video loads production source; fallback to local if missing (source order in HTML)
+        // nothing else required — the CSS vars control the overlay transparency based on theme
+      }
+    })();
+  </script>
+</body>
+</html>
